@@ -13,9 +13,13 @@ def detail_twitter_error(twitterException):
     try:
         for m in data.get('errors', dict()):
             printNicely(yellow(m.get('message')))
-    except: 
+    except:
         printNicely(yellow(data))
 
+def format_username(username):
+    if not username.startswith('@'):
+        return '@' + username
+    return username
 
 def format_prefix(listname='', keyword=''):
     """

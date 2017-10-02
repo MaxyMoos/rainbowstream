@@ -370,17 +370,15 @@ def whois():
     except:
         printNicely(red('Sorry I can\'t understand.'))
         return
-    if screen_name.startswith('@'):
-        try:
-            user = t.users.show(
-                screen_name=screen_name[1:],
-                include_entities=False)
-            show_profile(user)
-        except:
-            debug_option()
-            printNicely(red('No user.'))
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    screen_name = format_username(screen_name)
+    try:
+        user = t.users.show(
+            screen_name=screen_name[1:],
+            include_entities=False)
+        show_profile(user)
+    except:
+        debug_option()
+        printNicely(red('No user.'))
 
 
 def view():
@@ -393,17 +391,15 @@ def view():
     except:
         printNicely(red('Sorry I can\'t understand.'))
         return
-    if user[0] == '@':
-        try:
-            num = int(g['stuff'].split()[1])
-        except:
-            num = c['HOME_TWEET_NUM']
-        for tweet in reversed(
-                t.statuses.user_timeline(count=num, screen_name=user[1:], tweet_mode='extended')):
-            draw(t=tweet)
-        printNicely('')
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    user = format_username(user)
+    try:
+        num = int(g['stuff'].split()[1])
+    except:
+        num = c['HOME_TWEET_NUM']
+    for tweet in reversed(
+            t.statuses.user_timeline(count=num, screen_name=user[1:], tweet_mode='extended')):
+        draw(t=tweet)
+    printNicely('')
 
 
 def view_my_tweets():
@@ -856,15 +852,13 @@ def message():
     t = Twitter(auth=authen())
     try:
         user = g['stuff'].split()[0]
-        if user[0].startswith('@'):
-            content = ' '.join(g['stuff'].split()[1:])
-            t.direct_messages.new(
-                screen_name=user[1:],
-                text=content
-            )
-            printNicely(green('Message sent.'))
-        else:
-            printNicely(red('A name should begin with a \'@\''))
+        user = format_username(user)
+        content = ' '.join(g['stuff'].split()[1:])
+        t.direct_messages.new(
+            screen_name=user[1:],
+            text=content
+        )
+        printNicely(green('Message sent.'))
     except:
         debug_option()
         printNicely(red('Sorry I can\'t understand.'))
@@ -892,11 +886,8 @@ def ls():
     # Get name
     try:
         name = g['stuff'].split()[1]
-        if name.startswith('@'):
-            name = name[1:]
-        else:
-            printNicely(red('A name should begin with a \'@\''))
-            raise Exception('Invalid name')
+        name = format_username(name)
+        name = name[1:]
     except:
         name = g['original_name']
     # Get list followers or friends
@@ -951,11 +942,9 @@ def follow():
     """
     t = Twitter(auth=authen())
     screen_name = g['stuff'].split()[0]
-    if screen_name.startswith('@'):
-        t.friendships.create(screen_name=screen_name[1:], follow=True)
-        printNicely(green('You are following ' + screen_name + ' now!'))
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    screen_name = format_username(screen_name)
+    t.friendships.create(screen_name=screen_name[1:], follow=True)
+    printNicely(green('You are following ' + screen_name + ' now!'))
 
 
 def unfollow():
@@ -964,13 +953,11 @@ def unfollow():
     """
     t = Twitter(auth=authen())
     screen_name = g['stuff'].split()[0]
-    if screen_name.startswith('@'):
-        t.friendships.destroy(
-            screen_name=screen_name[1:],
-            include_entities=False)
-        printNicely(green('Unfollow ' + screen_name + ' success!'))
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    screen_name = format_username(screen_name)
+    t.friendships.destroy(
+        screen_name=screen_name[1:],
+        include_entities=False)
+    printNicely(green('Unfollow ' + screen_name + ' success!'))
 
 
 def mute():
@@ -983,20 +970,19 @@ def mute():
     except:
         printNicely(red('A name should be specified. '))
         return
-    if screen_name.startswith('@'):
-        try:
-            rel = t.mutes.users.create(screen_name=screen_name[1:])
-            if isinstance(rel, dict):
-                printNicely(green(screen_name + ' is muted.'))
-                c['IGNORE_LIST'] += [screen_name]
-                c['IGNORE_LIST'] = list(set(c['IGNORE_LIST']))
-            else:
-                printNicely(red(rel))
-        except:
-            debug_option()
-            printNicely(red('Something is wrong, can not mute now :('))
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    screen_name = format_username(screen_name)
+    try:
+        rel = t.mutes.users.create(screen_name=screen_name[1:])
+        if isinstance(rel, dict):
+            printNicely(green(screen_name + ' is muted.'))
+            c['IGNORE_LIST'] += [screen_name]
+            c['IGNORE_LIST'] = list(set(c['IGNORE_LIST']))
+        else:
+            printNicely(red(rel))
+    except:
+        debug_option()
+        printNicely(red('Something is wrong, can not mute now :('))
+
 
 
 def unmute():
@@ -1009,18 +995,16 @@ def unmute():
     except:
         printNicely(red('A name should be specified. '))
         return
-    if screen_name.startswith('@'):
-        try:
-            rel = t.mutes.users.destroy(screen_name=screen_name[1:])
-            if isinstance(rel, dict):
-                printNicely(green(screen_name + ' is unmuted.'))
-                c['IGNORE_LIST'].remove(screen_name)
-            else:
-                printNicely(red(rel))
-        except:
-            printNicely(red('Maybe you are not muting this person ?'))
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    screen_name = format_username(screen_name)
+    try:
+        rel = t.mutes.users.destroy(screen_name=screen_name[1:])
+        if isinstance(rel, dict):
+            printNicely(green(screen_name + ' is unmuted.'))
+            c['IGNORE_LIST'].remove(screen_name)
+        else:
+            printNicely(red(rel))
+    except:
+        printNicely(red('Maybe you are not muting this person ?'))
 
 
 def muting():
@@ -1044,14 +1028,12 @@ def block():
     """
     t = Twitter(auth=authen())
     screen_name = g['stuff'].split()[0]
-    if screen_name.startswith('@'):
-        t.blocks.create(
-            screen_name=screen_name[1:],
-            include_entities=False,
-            skip_status=True)
-        printNicely(green('You blocked ' + screen_name + '.'))
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    screen_name = format_username(screen_name)
+    t.blocks.create(
+        screen_name=screen_name[1:],
+        include_entities=False,
+        skip_status=True)
+    printNicely(green('You blocked ' + screen_name + '.'))
 
 
 def unblock():
@@ -1060,14 +1042,12 @@ def unblock():
     """
     t = Twitter(auth=authen())
     screen_name = g['stuff'].split()[0]
-    if screen_name.startswith('@'):
-        t.blocks.destroy(
-            screen_name=screen_name[1:],
-            include_entities=False,
-            skip_status=True)
-        printNicely(green('Unblock ' + screen_name + ' success!'))
-    else:
-        printNicely(red('A name should begin with a \'@\''))
+    screen_name = format_username(screen_name)
+    t.blocks.destroy(
+        screen_name=screen_name[1:],
+        include_entities=False,
+        skip_status=True)
+    printNicely(green('Unblock ' + screen_name + ' success!'))
 
 
 def report():
@@ -1076,12 +1056,10 @@ def report():
     """
     t = Twitter(auth=authen())
     screen_name = g['stuff'].split()[0]
-    if screen_name.startswith('@'):
-        t.users.report_spam(
-            screen_name=screen_name[1:])
-        printNicely(green('You reported ' + screen_name + '.'))
-    else:
-        printNicely(red('Sorry I can\'t understand.'))
+    screen_name = format_username(screen_name)
+    t.users.report_spam(
+        screen_name=screen_name[1:])
+    printNicely(green('You reported ' + screen_name + '.'))
 
 
 def get_slug():
@@ -1203,8 +1181,8 @@ def list_add(t):
         light_magenta(
             'Give me name of the newbie: ',
             rl=True))
-    if user_name.startswith('@'):
-        user_name = user_name[1:]
+    user_name = format_username(user_name)
+    user_name = user_name[1:]
     try:
         t.lists.members.create(
             slug=slug,
@@ -1226,8 +1204,8 @@ def list_remove(t):
         light_magenta(
             'Give me name of the unlucky one: ',
             rl=True))
-    if user_name.startswith('@'):
-        user_name = user_name[1:]
+    user_name = format_username(user_name)
+    user_name = user_name[1:]
     try:
         t.lists.members.destroy(
             slug=slug,
