@@ -718,6 +718,33 @@ def delete():
     printNicely(green('Okay it\'s gone.'))
 
 
+def show_profile_pic():
+    """
+    Show the profile picture of a Twitter account
+    """
+    t = Twitter(auth=authen())
+    try:
+        screen_name = g['stuff'].split()[0]
+        screen_name = format_username(screen_name)
+    except Exception:
+        printNicely(red('Sorry I can\'t understand.'))
+        return
+    try:
+        user = t.users.show(screen_name=screen_name[1:],
+                            include_entities=True)
+        profile_pic = user.get(u'profile_image_url')
+        if profile_pic:
+            profile_pic = profile_pic.replace('_normal', '')
+            res = requests.get(profile_pic)
+            img = Image.open(BytesIO(res.content))
+            img.show()
+        else:
+            printNicely(green('No profile pic for this user!'))
+    except:
+        debug_option()
+        printNicely(red('No user.'))
+
+
 def show():
     """
     Show image
@@ -1902,6 +1929,7 @@ cmdset = [
     'v',
     'q',
     'pt',
+    'pp',
 ]
 
 # Handle function set
@@ -1953,6 +1981,7 @@ funcset = [
     upgrade_center,
     quit,
     pocket,
+    show_profile_pic,
 ]
 
 
