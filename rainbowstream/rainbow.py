@@ -757,7 +757,10 @@ def show():
         id = int(g['stuff'].split()[1])
         tid = c['tweet_dict'][id]
         tweet = t.statuses.show(id=tid)
-        media = tweet['entities']['media']
+        if tweet.get('extended_entities'):
+            media = tweet['extended_entities']['media']
+        else:
+            media = tweet['entities']['media']
         for m in media:
             res = requests.get(m['media_url'])
             img = Image.open(BytesIO(res.content))
